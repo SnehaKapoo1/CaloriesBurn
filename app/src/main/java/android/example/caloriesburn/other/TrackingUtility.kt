@@ -1,0 +1,90 @@
+package android.example.caloriesburn.other
+import android.content.Context
+import android.example.caloriesburn.services.PolyLine
+import android.location.Location
+import android.os.Build
+import com.vmadalin.easypermissions.EasyPermissions
+import java.util.concurrent.TimeUnit
+
+
+object TrackingUtility {
+
+    //checking current device is running on Android Q or next
+    fun hasLocationPermission(context: Context) :Boolean {
+
+        /*So that means the device is not on Android Q and
+         in that case we don't need to Explicitly request that background permission
+        them these 2 permission are required */
+        return if(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            EasyPermissions.hasPermissions(
+                context,
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        }else{
+            EasyPermissions.hasPermissions(
+                context,
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            )
+        }
+    }
+
+    fun getFormattedStopWatchTime(ms: Long, includeMillis: Boolean = false): String {
+        var milliseconds = ms
+        val hours = TimeUnit.MILLISECONDS.toHours(milliseconds)
+        milliseconds -= TimeUnit.HOURS.toMillis(hours)
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds)
+        milliseconds -= TimeUnit.MINUTES.toMillis(minutes)
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds)
+        if(!includeMillis) {
+            return "${if (hours < 10) "0" else ""}$hours:" +
+                    "${if(minutes < 10) "0" else ""}$minutes:" +
+                    "${if(seconds < 10) "0" else ""}$seconds"
+        }
+        milliseconds -= TimeUnit.SECONDS.toMillis(seconds)
+        milliseconds /= 10
+
+        return "${if (hours < 10) "0" else ""}$hours:" +
+                "${if(minutes < 10) "0" else ""}$minutes:" +
+                "${if(seconds < 10) "0" else ""}$seconds:" +
+                "${if(milliseconds < 10) "0" else ""}$milliseconds"
+    }
+
+    fun CalculatePolyLineDistanceLength(polyline: PolyLine): Float{
+       var distance = 0f
+        for(i in 0..polyline.size - 2){
+            val pos1 = polyline[i]
+            val pos2 = polyline[i + 1]
+
+            val result = FloatArray(1)
+            Location.distanceBetween(
+                pos1.latitude,
+                pos1.longitude,
+                pos2.latitude,
+                pos2.longitude,
+                result
+            )
+            distance += result[0]
+        }
+        return distance
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
